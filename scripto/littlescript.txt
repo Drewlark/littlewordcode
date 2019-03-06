@@ -1,0 +1,21 @@
+$abc()
+	k=65
+	@k<?91
+		'*k
+		k+1
+	endc
+	:*0
+endf
+
+$sub(a,b)
+	b<?a
+		b+1
+		:b
+		sub(a,b)
+	endc
+endf
+
+
+c=10
+a=2
+sub(c,a)

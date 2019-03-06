@@ -125,7 +125,7 @@ vector<string> splitString(string s, char delim)
 	return ret;
 }
 
-void compute(vector<string> words, dataset addScope) {
+int compute(vector<string> words, dataset addScope) {
 	/*cout << "+++START+++" << endl;
 	for (string w : words) {
 		cout << w << endl;
@@ -143,18 +143,24 @@ void compute(vector<string> words, dataset addScope) {
 	int s_paren;
 	int e_paren;
 	int end_paren_c;
+	int retval = 0;
 	for (int line_num = 0; line_num < words.size(); ++line_num) // use the range-based for to print the list one item at a time
 	{
 		bool prnt_line = false;
 		int i = 0;
 		string w = words[line_num];
-		
+		if (w.substr(0, 2) == "//") {
+			continue;
+		}
 		if (!cSeeking && !funcSeeking) {
 			s_paren = w.find('(');
 			e_paren = w.rfind(')');
 			end_paren_c = e_paren - s_paren;
 			if (pfuncs.count(w[0]) > 0) {
 				pfuncs[w[0]](w.substr(1),addScope);
+			}
+			else if (w[0] == '%') {
+				return parseName(w.substr(1), addScope);
 			}
 			else if (w[0] == '$') {
 				funcName = w.substr(1, s_paren-1);
@@ -164,6 +170,7 @@ void compute(vector<string> words, dataset addScope) {
 			}
 			else if (s_paren != w.npos && e_paren != w.npos) {
 				string test = w.substr(0, s_paren);
+				
 				unordered_map<string, function_id > f_test_f = funcs;
 				function_id fid = funcs[test];
 				vector<string> args = get<1>(fid);
@@ -173,7 +180,17 @@ void compute(vector<string> words, dataset addScope) {
 				for (int iter = 0; i < args.size();i++) {
 					ds[args[i]] = parseName(params[i], addScope);
 				}
-				compute(get<0>(fid), ds);
+				string rvar = w.substr(e_paren + 1);
+				if (rvar.size() > 0) {
+					if (addScope.size() < 1) {
+						values[rvar] = compute(get<0>(fid), ds);
+					}
+					else {
+						addScope[rvar] = compute(get<0>(fid), ds);
+					}
+				}
+				else
+					compute(get<0>(fid), ds);
 				continue;
 			}
 			else {
@@ -297,6 +314,7 @@ void compute(vector<string> words, dataset addScope) {
 		}
 
 	}
+	return 0;
 }
 
 int main()

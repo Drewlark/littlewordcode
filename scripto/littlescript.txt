@@ -7,15 +7,31 @@ $abc()
 	:*0
 endf
 
-$sub(a,b)
-	b<?a
-		b+1
-		:b
-		sub(a,b)
+$fib(n)
+	n<?2
+		:1
+		%1
 	endc
+	n>?2
+		k=n
+		k-2
+		n-1
+		fib(n)resultn
+		fib(k)resultk
+		resultn+resultk
+		:resultn
+		%resultn
+	endc
+endf
+
+$test(n)
+	n+1
+	%n
 endf
 
 
 c=10
 a=2
-sub(c,a)
+abc()
+fib(5)result
+:result

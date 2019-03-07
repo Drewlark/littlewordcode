@@ -8,30 +8,42 @@ $abc()
 endf
 
 $fib(n)
-	n<?2
-		:1
-		%1
+	n<?1
+		%n
 	endc
-	n>?2
-		k=n
-		k-2
-		n-1
-		fib(n)resultn
-		fib(k)resultk
-		resultn+resultk
-		:resultn
-		%resultn
+	n~?1
+		%n
 	endc
+	k=n
+	k-2
+	n-1
+	fib(n)resultn
+	fib(k)resultk
+	resultn+resultk
+	%resultn
 endf
 
 $test(n)
-	n+1
-	%n
+	n~?2
+		n+1
+		%n
+	endc
+	n>?2
+		k=10
+		%k
+	endc
 endf
 
 
 c=10
 a=2
 abc()
-fib(5)result
-:result
+
+iter=0
+@iter<?10
+	fib(iter)result
+	iter+1
+	'result '*44
+endc
+:*0
+abc()

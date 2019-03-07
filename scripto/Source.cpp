@@ -4,6 +4,7 @@
 #include <forward_list>
 #include <vector>
 #include <unordered_map>
+#include <stack>
 /*
 
   PRACTICE:
@@ -124,8 +125,9 @@ vector<string> splitString(string s, char delim)
 		ret.push_back(curr);
 	return ret;
 }
+stack<int> return_stack;
 
-int compute(vector<string> words, dataset addScope) {
+bool compute(vector<string> words, dataset addScope) {
 	/*cout << "+++START+++" << endl;
 	for (string w : words) {
 		cout << w << endl;
@@ -160,7 +162,9 @@ int compute(vector<string> words, dataset addScope) {
 				pfuncs[w[0]](w.substr(1),addScope);
 			}
 			else if (w[0] == '%') {
-				return parseName(w.substr(1), addScope);
+				int temp_val = parseName(w.substr(1), addScope);
+				return_stack.push(temp_val);
+				return true;
 			}
 			else if (w[0] == '$') {
 				funcName = w.substr(1, s_paren-1);
@@ -180,19 +184,23 @@ int compute(vector<string> words, dataset addScope) {
 				for (int iter = 0; i < args.size();i++) {
 					ds[args[i]] = parseName(params[i], addScope);
 				}
+				compute(get<0>(fid), ds);
 				string rvar = w.substr(e_paren + 1);
-				if (rvar.size() > 0) {
-					if (addScope.size() < 1) {
-						values[rvar] = compute(get<0>(fid), ds);
-					}
-					else {
-						addScope[rvar] = compute(get<0>(fid), ds);
+				if (!return_stack.empty()) {
+					if (rvar.size() > 0) {
+						if (addScope.size() < 1) {
+							values[rvar] = return_stack.top();
+							return_stack.pop();
+						}
+						else {
+							addScope[rvar] = return_stack.top();
+							return_stack.pop();
+						}
 					}
 				}
-				else
-					compute(get<0>(fid), ds);
 				continue;
 			}
+			
 			else {
 				string ps = "";
 				string val = "";
@@ -271,12 +279,19 @@ int compute(vector<string> words, dataset addScope) {
 				if (cSeeki == 0) {
 					if (condTrue) {
 						//cout << "Ya" << endl;
-						if(!inLoop)
-							compute(newvec,addScope);
+						if (!inLoop) {
+							if (compute(newvec, addScope)) {
+								cSeeking = false;
+								return true;
+							}
+						}
 						else {
 							while (parseConditional(origps, origval, addScope))
 							{
-								compute(newvec,addScope);
+								if (compute(newvec, addScope)) {
+									inLoop = false;
+									return true;
+								}
 							}
 							inLoop = false;
 						}
@@ -314,7 +329,7 @@ int compute(vector<string> words, dataset addScope) {
 		}
 
 	}
-	return 0;
+	return false;
 }
 
 int main()

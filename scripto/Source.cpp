@@ -17,14 +17,25 @@
 */
 
 using namespace std;
-typedef unordered_map<string, int> dataset;
-typedef void(*print_func)(string, dataset);
 
+typedef unordered_map<string, int> dataset;
+typedef void(*print_func)(string, dataset&);
 typedef tuple<vector<string>, vector<string>> function_id;
-unordered_map<string, int> values;
+
+dataset values;
+vector<string> ordered_values;
+dataset invrs_ord_val; //maps a variable name to it's place im memory
+
+
 unordered_map<char,print_func> pfuncs;
 unordered_map<string, function_id > funcs;
 unordered_map<string, int> func_scope;
+
+
+
+template <class T>
+unordered_map<string, T> builtin_funcs;
+
 bool isNum(string &s) {
 	return to_string(atoi(s.c_str())) == s;
 }
@@ -83,7 +94,7 @@ bool parseConditional(string pre, string post, dataset &addScope) {
 	}
 }
 
-void _printLn(string s, dataset addScope) {
+void _printLn(string s, dataset &addScope) {
 	if (s[0] == '*') {
 		s = s.substr(1);
 		char value = parseName(s, addScope);
@@ -97,7 +108,7 @@ void _printLn(string s, dataset addScope) {
 	
 }
 
-void _print(string s, dataset addScope) {
+void _print(string s, dataset &addScope) {
 	if (s[0] == '*') {
 		s = s.substr(1);
 		char value = parseName(s, addScope);
@@ -127,7 +138,7 @@ vector<string> splitString(string s, char delim)
 }
 stack<int> return_stack;
 
-bool compute(vector<string> words, dataset addScope) {
+bool compute(vector<string> words, dataset &addScope) {
 	/*cout << "+++START+++" << endl;
 	for (string w : words) {
 		cout << w << endl;
@@ -181,11 +192,13 @@ bool compute(vector<string> words, dataset addScope) {
 				vector<string> params = splitString(w.substr(s_paren + 1,end_paren_c-1), ',');
 				dataset ds;
 				//cout << w << endl;
-				for (int iter = 0; i < args.size();i++) {
-					ds[args[i]] = parseName(params[i], addScope);
+				ds["$"] = 0; /*This line of code adds a single "impossible" variable to the 
+			   "addscope" such that the assignment interpreter recognizes we will not be in the global scope*/
+				for (int iter = 0; iter < args.size();iter++) {
+					ds[args[iter]] = parseName(params[iter], addScope);
 				}
-				compute(get<0>(fid), ds);
-				string rvar = w.substr(e_paren + 1);
+				compute(get<0>(fid), ds); //runs function
+				string rvar = w.substr(e_paren + 1); //gets name after '%' symbol
 				if (!return_stack.empty()) {
 					if (rvar.size() > 0) {
 						if (addScope.size() < 1) {
@@ -237,7 +250,9 @@ bool compute(vector<string> words, dataset addScope) {
 				int ival = atoi(val.c_str());
 
 				if (foundVar) {
-					if (addScope.size() < 1) {
+					//The following if statementis a trick to determine if we are in the global scope or inside a function. 
+					//When inside a function even if there are no args, an impossible variable "$" is passed through addScope
+					if (addScope.size() < 1) { 
 						values[ps] = parseName(val, addScope);
 					}
 					else {
@@ -246,7 +261,9 @@ bool compute(vector<string> words, dataset addScope) {
 					//cout << "set " << ps << " to " << val << endl;
 				}
 				else if (foundAdd) {
-					*parseVar(ps, addScope) += parseName(val, addScope);
+					dataset ffffdebug = values;
+					int ppdebug = parseName(val, addScope);
+					*parseVar(ps, addScope) += ppdebug;
 				}
 				else if (foundSub) {
 					*parseVar(ps, addScope) -= parseName(val, addScope);
@@ -280,7 +297,7 @@ bool compute(vector<string> words, dataset addScope) {
 					if (condTrue) {
 						//cout << "Ya" << endl;
 						if (!inLoop) {
-							if (compute(newvec, addScope)) {
+							if (compute(newvec, addScope)) { //if end of loop found, compute the vector of internal code
 								cSeeking = false;
 								return true;
 							}
@@ -334,29 +351,30 @@ bool compute(vector<string> words, dataset addScope) {
 
 int main()
 {
-
-	string fileName = "littlescript.txt"; // this could also be main.cpp
-	fstream fs;  // a handle for the file we will open
-	string s; // a word that we will get from the file... delimited by white space
-	vector<string> words; // our collection of words (strings)
+	//Original file opening code from a sample provided to teach fstreams in an Advanced C++ class
+	//Thank you Professor Yates!
+	//I began working on this language as I played around with the fstream example
+	string fileName = "littlescript.txt"; 
+	fstream fs;  
+	string s; 
+	vector<string> words; 
 	pfuncs[':'] = _printLn;
 	pfuncs['\''] = _print;
-
-	// note below:
-	// we can get the "c" string version from and STL string by using the .c_str() method
-	// some functions require a simple string and cannot convert from and STL string properly.
 
 	cout << "Reading " << fileName << "...." << endl;
 
 	fs.open(fileName.c_str());
-	while (fs >> s) { // read one word at a time
+	while (fs >> s) { 
 		words.push_back(s);
 	}
 
 	fs.flush();
 
 	cout << "Done Reading!" << endl << endl; // let the user know we are done
-	compute(words,dataset());
+	dataset empty_dataset = dataset();
+	compute(words,empty_dataset);
+	string ends;
+	cin >> ends;
 	return 0;
 }
 

@@ -23,18 +23,6 @@ $fib(n)
 	%resultn
 endf
 
-$test(n)
-	n~?2
-		n+1
-		%n
-	endc
-	n>?2
-		k=10
-		%k
-	endc
-endf
-
-
 c=10
 a=2
 abc()

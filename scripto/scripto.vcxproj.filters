@@ -21,6 +21,9 @@
     <ClCompile Include="lwc_Scope.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="lwc_Utility.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="littlescript.txt">
@@ -35,6 +38,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="lwc_Scope.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="lwc_Operators.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="lwc_Utility.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

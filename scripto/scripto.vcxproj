@@ -115,6 +115,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="lwc_Utility.cpp" />
     <ClCompile Include="lwc_Scope.cpp" />
     <ClCompile Include="Source.cpp" />
   </ItemGroup>
@@ -124,7 +125,9 @@
     <Text Include="test2.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="lwc_Operators.h" />
     <ClInclude Include="lwc_Scope.h" />
+    <ClInclude Include="lwc_Utility.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

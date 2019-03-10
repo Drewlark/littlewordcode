@@ -1,4 +1,3 @@
-
 #ifndef LWC_SCOPE
 #define LWC_SCOPE
 #include <unordered_map>
@@ -7,22 +6,23 @@
 #include <vector>
 
 using namespace std;
-
 struct lwc_Scope;
-
 typedef unordered_map<string, int> dataset;
 
 typedef tuple<vector<string>, vector<string>> function_id;
 
 
+
 struct lwc_Scope{
-	
+	static lwc_Scope global_scope;
 private:
 	dataset values;
 	vector<string> ordered_values;
 	dataset invrs_ord_val;
 	unordered_map<int, function_id> funcs;
+	
 public:
+	
 	//static vector<lwc_Scope&> scopes;
 	lwc_Scope() {
 	}
@@ -60,7 +60,11 @@ public:
 	int declare_function(string s, function_id fid);
 
 	function_id get_function(string s);
+
+	int parseName(string &s);
+
 };
+
 
 
 #endif

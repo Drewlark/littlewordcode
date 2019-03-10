@@ -6,58 +6,11 @@
 #include <unordered_map>
 #include <stack>
 #include "lwc_Scope.h"
-/*
 
-  PRACTICE:
-  Read one word at a time from datafile.txt
-  Add each word to a STL forward_list container, any way you like
-  After all words have been stored in the container…
-  Use the range-based for loop to print the contents of the container
-  Rerun your program and have it process your main.cpp file as an input file!
-
-*/
 
 using namespace std;
 
-lwc_Scope global;
-
-
-
-unordered_map<string, int> func_scope;
-
-
-
-
-
-bool isNum(string &s) {
-	return to_string(atoi(s.c_str())) == s;
-}
-
-bool isNum(string &val, int &ival) {
-	return to_string(ival) == val;
-}
-
-int parseName(string s, lwc_Scope &addScope) {
-	int val;
-	//s = scope+"."+ s;
-	//cout << s << endl;
-	if (isNum(s)) {
-		val = atoi(s.c_str());
-	}
-	else {
-		if (addScope.count(s) > 0) {
-			val = addScope[s];
-		}
-		else if (global.count(s) > 0) {
-			val = global[s];
-		}
-		else {
-			cout << "Undefined variable used " << s << endl;
-			throw exception();
-		}
-	}
-	return val;
-}
+lwc_Scope &global = lwc_Scope().global_scope;
 
 int* parseVar(string s, lwc_Scope &addScope) {
 	if (addScope.count(s) > 0) {
@@ -73,8 +26,8 @@ bool parseConditional(string pre, string post, lwc_Scope &addScope) {
 	char q = pre.at(pre.length() - 1);
 	pre = pre.substr(0, pre.length()-1);
 	//cout << pre << endl;
-	int val1 = parseName(pre, addScope);
-	int val2 = parseName(post, addScope);
+	int val1 = addScope.parseName(pre);
+	int val2 = addScope.parseName(post);
 	//cout << (val1 == val2) << endl;
 	//cout << val1 << " and val2: " << val2 << endl;
 	switch (q) {
@@ -90,11 +43,11 @@ bool parseConditional(string pre, string post, lwc_Scope &addScope) {
 void _printLn(string s, lwc_Scope &addScope) {
 	if (s[0] == '*') {
 		s = s.substr(1);
-		char value = parseName(s, addScope);
+		char value = addScope.parseName(s);
 		cout << value << endl;
 	}
 	else {
-		cout << parseName(s,addScope) << endl;
+		cout << addScope.parseName(s) << endl;
 	}
 	
 		
@@ -104,11 +57,11 @@ void _printLn(string s, lwc_Scope &addScope) {
 void _print(string s, lwc_Scope &addScope) {
 	if (s[0] == '*') {
 		s = s.substr(1);
-		char value = parseName(s, addScope);
+		char value = addScope.parseName(s);
 		cout << value;
 	}
 	else {
-		cout << parseName(s, addScope);
+		cout << addScope.parseName(s);
 	}
 }
 
@@ -168,7 +121,6 @@ bool compute(vector<string> words, lwc_Scope &addScope) {
 	bool funcSeeking = false;
 	int cSeeki = 0;
 	bool condTrue = false;
-	vector<string> newvec;
 	bool inLoop = false;
 	string origps, origval;
 	string funcName;
@@ -176,6 +128,7 @@ bool compute(vector<string> words, lwc_Scope &addScope) {
 	int s_paren;
 	int e_paren;
 	int end_paren_c;
+	vector<string> newvec;
 	for (int line_num = 0; line_num < words.size(); ++line_num) // use the range-based for to print the list one item at a time
 	{
 		
@@ -188,12 +141,13 @@ bool compute(vector<string> words, lwc_Scope &addScope) {
 		if (!cSeeking && !funcSeeking) {
 			s_paren = w.find('(');
 			e_paren = w.rfind(')');
+			string wsub = w.substr(1);
 			end_paren_c = e_paren - s_paren;
 			if (pfuncs.count(w[0]) > 0) {
-				pfuncs[w[0]](w.substr(1), addScope);
+				pfuncs[w[0]](wsub, addScope);
 			}
 			else if (w[0] == '%') {
-				int temp_val = parseName(w.substr(1), addScope);
+				int temp_val = addScope.parseName(wsub);
 				return_stack.push(temp_val);
 				return true;
 			}
@@ -214,7 +168,7 @@ bool compute(vector<string> words, lwc_Scope &addScope) {
 				ds["$"] = 0; /*This line of code adds a single "impossible" variable to the 
 			   "addscope" such that the assignment interpreter recognizes we will not be in the global scope*/
 				for (int iter = 0; iter < args.size();iter++) {
-					ds[args[iter]] = parseName(params[iter], addScope);
+					ds[args[iter]] = addScope.parseName(params[iter]);
 				}
 				compute(get<0>(fid), ds); //runs function
 				string rvar = w.substr(e_paren + 1); //gets name after '%' symbol
@@ -272,19 +226,19 @@ bool compute(vector<string> words, lwc_Scope &addScope) {
 					//The following if statementis a trick to determine if we are in the global scope or inside a function. 
 					//When inside a function even if there are no args, an impossible variable "$" is passed through addScope
 					if (addScope.size() < 1) { 
-						global[ps] = parseName(val, addScope);
+						global[ps] = addScope.parseName(val);
 					}
 					else {
-						addScope[ps] = parseName(val, addScope);
+						addScope[ps] = addScope.parseName(val);
 					}
 					//cout << "set " << ps << " to " << val << endl;
 				}
 				else if (foundAdd) {
-					int ppdebug = parseName(val, addScope);
+					int ppdebug = addScope.parseName(val);
 					*parseVar(ps, addScope) += ppdebug;
 				}
 				else if (foundSub) {
-					*parseVar(ps, addScope) -= parseName(val, addScope);
+					*parseVar(ps, addScope) -= addScope.parseName(val);
 				}
 				else if (foundIf) {
 					//cout << "HELP" << endl;
@@ -309,6 +263,7 @@ bool compute(vector<string> words, lwc_Scope &addScope) {
 
 		}
 		else if(cSeeking) {
+
 			if (w == "endc") {
 				cSeeki--;
 				if (cSeeki == 0) {

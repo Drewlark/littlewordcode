@@ -23,6 +23,7 @@ $fib(n)
 	%resultn
 endf
 
+
 c=10
 a=2
 abc()

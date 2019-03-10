@@ -176,7 +176,6 @@ bool compute(vector<string> words, lwc_Scope &addScope) {
 	int s_paren;
 	int e_paren;
 	int end_paren_c;
-	int retval = 0;
 	for (int line_num = 0; line_num < words.size(); ++line_num) // use the range-based for to print the list one item at a time
 	{
 		

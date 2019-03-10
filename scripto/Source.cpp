@@ -5,6 +5,7 @@
 #include <vector>
 #include <unordered_map>
 #include <stack>
+#include "lwc_Scope.h"
 /*
 
   PRACTICE:
@@ -18,23 +19,14 @@
 
 using namespace std;
 
-typedef unordered_map<string, int> dataset;
-typedef void(*print_func)(string, dataset&);
-typedef tuple<vector<string>, vector<string>> function_id;
-
-dataset values;
-vector<string> ordered_values;
-dataset invrs_ord_val; //maps a variable name to it's place im memory
+lwc_Scope global;
 
 
-unordered_map<char,print_func> pfuncs;
-unordered_map<string, function_id > funcs;
+
 unordered_map<string, int> func_scope;
 
 
 
-template <class T>
-unordered_map<string, T> builtin_funcs;
 
 bool isNum(string &s) {
 	return to_string(atoi(s.c_str())) == s;
@@ -44,7 +36,7 @@ bool isNum(string &val, int &ival) {
 	return to_string(ival) == val;
 }
 
-int parseName(string s, dataset &addScope) {
+int parseName(string s, lwc_Scope &addScope) {
 	int val;
 	//s = scope+"."+ s;
 	//cout << s << endl;
@@ -55,8 +47,8 @@ int parseName(string s, dataset &addScope) {
 		if (addScope.count(s) > 0) {
 			val = addScope[s];
 		}
-		else if (values.count(s) > 0) {
-			val = values[s];
+		else if (global.count(s) > 0) {
+			val = global[s];
 		}
 		else {
 			cout << "Undefined variable used " << s << endl;
@@ -66,16 +58,16 @@ int parseName(string s, dataset &addScope) {
 	return val;
 }
 
-int* parseVar(string s, dataset &addScope) {
+int* parseVar(string s, lwc_Scope &addScope) {
 	if (addScope.count(s) > 0) {
 		return &addScope[s];
 	}
-	else if (values.count(s) > 0) {
-		return &values[s];
+	else if (global.count(s) > 0) {
+		return &global[s];
 	}
 }
 
-bool parseConditional(string pre, string post, dataset &addScope) {
+bool parseConditional(string pre, string post, lwc_Scope &addScope) {
 	string sp = "";
 	char q = pre.at(pre.length() - 1);
 	pre = pre.substr(0, pre.length()-1);
@@ -94,7 +86,7 @@ bool parseConditional(string pre, string post, dataset &addScope) {
 	}
 }
 
-void _printLn(string s, dataset &addScope) {
+void _printLn(string s, lwc_Scope &addScope) {
 	if (s[0] == '*') {
 		s = s.substr(1);
 		char value = parseName(s, addScope);
@@ -108,7 +100,7 @@ void _printLn(string s, dataset &addScope) {
 	
 }
 
-void _print(string s, dataset &addScope) {
+void _print(string s, lwc_Scope &addScope) {
 	if (s[0] == '*') {
 		s = s.substr(1);
 		char value = parseName(s, addScope);
@@ -136,9 +128,35 @@ vector<string> splitString(string s, char delim)
 		ret.push_back(curr);
 	return ret;
 }
+
+int builtin_dereference(vector<string> args)
+{
+	return 0;
+}
+
+int builtin_get_addr(vector<string> args)
+{
+	return 0;
+}
+
+
+
+
+unordered_map<string, builtin> builtin_funcs(
+	{ 
+		{"deref",builtin_dereference},
+		{"addr",  builtin_get_addr}
+	});
+
+unordered_map<char, print_func> pfuncs(
+	{
+	{':', _printLn},
+	{'\'', _print} 
+	});
+
 stack<int> return_stack;
 
-bool compute(vector<string> words, dataset &addScope) {
+bool compute(vector<string> words, lwc_Scope &addScope) {
 	/*cout << "+++START+++" << endl;
 	for (string w : words) {
 		cout << w << endl;
@@ -159,6 +177,7 @@ bool compute(vector<string> words, dataset &addScope) {
 	int retval = 0;
 	for (int line_num = 0; line_num < words.size(); ++line_num) // use the range-based for to print the list one item at a time
 	{
+		
 		bool prnt_line = false;
 		int i = 0;
 		string w = words[line_num];
@@ -170,7 +189,7 @@ bool compute(vector<string> words, dataset &addScope) {
 			e_paren = w.rfind(')');
 			end_paren_c = e_paren - s_paren;
 			if (pfuncs.count(w[0]) > 0) {
-				pfuncs[w[0]](w.substr(1),addScope);
+				pfuncs[w[0]](w.substr(1), addScope);
 			}
 			else if (w[0] == '%') {
 				int temp_val = parseName(w.substr(1), addScope);
@@ -186,11 +205,10 @@ bool compute(vector<string> words, dataset &addScope) {
 			else if (s_paren != w.npos && e_paren != w.npos) {
 				string test = w.substr(0, s_paren);
 				
-				unordered_map<string, function_id > f_test_f = funcs;
-				function_id fid = funcs[test];
+				function_id fid = global.get_function(test);
 				vector<string> args = get<1>(fid);
 				vector<string> params = splitString(w.substr(s_paren + 1,end_paren_c-1), ',');
-				dataset ds;
+				lwc_Scope ds;
 				//cout << w << endl;
 				ds["$"] = 0; /*This line of code adds a single "impossible" variable to the 
 			   "addscope" such that the assignment interpreter recognizes we will not be in the global scope*/
@@ -202,7 +220,7 @@ bool compute(vector<string> words, dataset &addScope) {
 				if (!return_stack.empty()) {
 					if (rvar.size() > 0) {
 						if (addScope.size() < 1) {
-							values[rvar] = return_stack.top();
+							global[rvar] = return_stack.top();
 							return_stack.pop();
 						}
 						else {
@@ -253,7 +271,7 @@ bool compute(vector<string> words, dataset &addScope) {
 					//The following if statementis a trick to determine if we are in the global scope or inside a function. 
 					//When inside a function even if there are no args, an impossible variable "$" is passed through addScope
 					if (addScope.size() < 1) { 
-						values[ps] = parseName(val, addScope);
+						global[ps] = parseName(val, addScope);
 					}
 					else {
 						addScope[ps] = parseName(val, addScope);
@@ -261,7 +279,6 @@ bool compute(vector<string> words, dataset &addScope) {
 					//cout << "set " << ps << " to " << val << endl;
 				}
 				else if (foundAdd) {
-					dataset ffffdebug = values;
 					int ppdebug = parseName(val, addScope);
 					*parseVar(ps, addScope) += ppdebug;
 				}
@@ -334,7 +351,7 @@ bool compute(vector<string> words, dataset &addScope) {
 		else if (funcSeeking) {
 			if (w == "endf") {
 				
-				funcs[funcName] = make_tuple(newvec, splitString(func_content, ','));
+				global.declare_function(funcName,make_tuple(newvec, splitString(func_content, ',')));
 				funcSeeking = false;
 				newvec.clear();
 				continue;
@@ -349,6 +366,8 @@ bool compute(vector<string> words, dataset &addScope) {
 	return false;
 }
 
+
+
 int main()
 {
 	//Original file opening code from a sample provided to teach fstreams in an Advanced C++ class
@@ -358,8 +377,6 @@ int main()
 	fstream fs;  
 	string s; 
 	vector<string> words; 
-	pfuncs[':'] = _printLn;
-	pfuncs['\''] = _print;
 
 	cout << "Reading " << fileName << "...." << endl;
 
@@ -371,8 +388,8 @@ int main()
 	fs.flush();
 
 	cout << "Done Reading!" << endl << endl; // let the user know we are done
-	dataset empty_dataset = dataset();
-	compute(words,empty_dataset);
+	lwc_Scope empty_scope;
+	compute(words, empty_scope);
 	string ends;
 	cin >> ends;
 	return 0;

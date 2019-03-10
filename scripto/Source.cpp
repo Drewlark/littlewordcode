@@ -28,6 +28,7 @@ unordered_map<string, int> func_scope;
 
 
 
+
 bool isNum(string &s) {
 	return to_string(atoi(s.c_str())) == s;
 }
@@ -129,23 +130,24 @@ vector<string> splitString(string s, char delim)
 	return ret;
 }
 
-int builtin_dereference(vector<string> args)
+typedef void(*print_func)(string, lwc_Scope&);
+typedef int(*builtin)(vector<string>, lwc_Scope&);
+typedef unordered_map<string, builtin> builtin_set;
+
+int builtin_dereference(vector<string> args, lwc_Scope& addScope)
 {
 	return 0;
 }
 
-int builtin_get_addr(vector<string> args)
+int builtin_get_addr(vector<string> args,  lwc_Scope& addScope)
 {
 	return 0;
 }
 
+builtin_set BUILT_IN({ 
+	{"deref", builtin_dereference},
+	{"ptr", builtin_get_addr}
 
-
-
-unordered_map<string, builtin> builtin_funcs(
-	{ 
-		{"deref",builtin_dereference},
-		{"addr",  builtin_get_addr}
 	});
 
 unordered_map<char, print_func> pfuncs(
@@ -373,7 +375,7 @@ int main()
 	//Original file opening code from a sample provided to teach fstreams in an Advanced C++ class
 	//Thank you Professor Yates!
 	//I began working on this language as I played around with the fstream example
-	string fileName = "littlescript.txt"; 
+	string fileName = "justfib.txt"; 
 	fstream fs;  
 	string s; 
 	vector<string> words; 
@@ -391,7 +393,7 @@ int main()
 	lwc_Scope empty_scope;
 	compute(words, empty_scope);
 	string ends;
-	cin >> ends;
+	//cin >> ends;
 	return 0;
 }
 

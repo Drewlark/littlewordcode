@@ -119,6 +119,7 @@
     <ClCompile Include="Source.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <Text Include="justfib.txt" />
     <Text Include="littlescript.txt" />
     <Text Include="test2.txt" />
   </ItemGroup>

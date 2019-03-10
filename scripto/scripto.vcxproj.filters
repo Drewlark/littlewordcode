@@ -29,6 +29,9 @@
     <Text Include="test2.txt">
       <Filter>Source Files</Filter>
     </Text>
+    <Text Include="justfib.txt">
+      <Filter>Source Files</Filter>
+    </Text>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="lwc_Scope.h">

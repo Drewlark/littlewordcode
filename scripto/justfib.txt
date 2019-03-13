@@ -1,22 +1,7 @@
-$fib(n)
-	n<?1
-		%n
-	endc
-	n~?1
-		%n
-	endc
-	k=n
-	k-2
-	n-1
-	fib(n)resultn
-	fib(k)resultk
-	resultn+resultk
-	%resultn
-endf
-
+k=0
 iter=0
-@iter<?30
-	fib(iter)result
+@iter<?10000000
+	k+1
 	iter+1
-	:result
 endc
+:k

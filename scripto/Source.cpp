@@ -7,12 +7,13 @@
 #include <stack>
 #include "lwc_Scope.h"
 
+//Convert all variable names with memory locations in situ.
 
 using namespace std;
 
 lwc_Scope &global = lwc_Scope().global_scope;
 
-int* parseVar(string s, lwc_Scope &addScope) {
+int* parseVar(string &s, lwc_Scope &addScope) {
 	if (addScope.count(s) > 0) {
 		return &addScope[s];
 	}
@@ -111,7 +112,7 @@ unordered_map<char, print_func> pfuncs(
 
 stack<int> return_stack;
 
-bool compute(vector<string> words, lwc_Scope &addScope) {
+bool compute(vector<string> &words, lwc_Scope &addScope) {
 	/*cout << "+++START+++" << endl;
 	for (string w : words) {
 		cout << w << endl;
@@ -306,8 +307,8 @@ bool compute(vector<string> words, lwc_Scope &addScope) {
 		}
 		else if (funcSeeking) {
 			if (w == "endf") {
-				
-				global.declare_function(funcName,make_tuple(newvec, splitString(func_content, ',')));
+				function_id fid = make_tuple(newvec, splitString(func_content, ','));
+				global.declare_function(funcName, fid);
 				funcSeeking = false;
 				newvec.clear();
 				continue;
@@ -336,7 +337,7 @@ int main()
 
 	cout << "Reading " << fileName << "...." << endl;
 
-	fs.open(fileName.c_str());
+	fs.open(fileName);
 	while (fs >> s) { 
 		words.push_back(s);
 	}

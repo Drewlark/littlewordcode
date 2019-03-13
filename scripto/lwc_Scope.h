@@ -28,11 +28,14 @@ public:
 	}
 	int& operator[](const string s) {
 		if (values.count(s) == 0) {
-			values[s] = 0;
+			int &v = values[s] = 0;
 			ordered_values.push_back(s);
 			invrs_ord_val[s] = ordered_values.size() - 1;
+			return v;
 		}
-		return values[s];
+		else {
+			return values[s];
+		}
 	}
 	
 	int count(const string s) {
@@ -57,9 +60,9 @@ public:
 		return invrs_ord_val[s];
 	}
 
-	int declare_function(string s, function_id fid);
+	int declare_function(string s, function_id &fid);
 
-	function_id get_function(string s);
+	function_id get_function(string &s);
 
 	int parseName(string &s);
 

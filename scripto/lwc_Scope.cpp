@@ -7,22 +7,26 @@ lwc_Scope lwc_Scope::global_scope;
 
 int lwc_Scope::declare_function(string s, function_id &fid) {
 	s = '$' + s;
-	int addr = ordered_values.size();
-	ordered_values.push_back(s);
-	values[s] = addr;
+	//int addr = ordered_values.size();
+	//ordered_values.push_back(s);
+	int addr = values.size();
+	values[s] = new int(addr);
 	funcs[addr] = fid;
 	return addr;
 }
 
 
 function_id lwc_Scope::get_function(string &s) {
-	return funcs[values['$' + s]];
+	return funcs[*values['$' + s]];
 }
 
 int lwc_Scope::parseName(string &s) {
 	int val;
 	//s = scope+"."+ s;
 	//cout << s << endl;
+	if (s[0] == '@') {
+		return *(int*)(atoi(s.substr(1).c_str()));
+	}
 	if (isNum(s)) {
 		val = atoi(s.c_str());
 	}

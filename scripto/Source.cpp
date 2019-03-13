@@ -1,10 +1,10 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include <forward_list>
 #include <vector>
 #include <unordered_map>
 #include <stack>
+#include <sstream>
 #include "lwc_Scope.h"
 
 //Convert all variable names with memory locations in situ.
@@ -14,6 +14,9 @@ using namespace std;
 lwc_Scope &global = lwc_Scope().global_scope;
 
 int* parseVar(string &s, lwc_Scope &addScope) {
+	if (s[0] == '@') {
+		return (int*)(atoi(s.substr(1).c_str()));
+	}
 	if (addScope.count(s) > 0) {
 		return &addScope[s];
 	}
@@ -226,12 +229,15 @@ bool compute(vector<string> &words, lwc_Scope &addScope) {
 				if (foundVar) {
 					//The following if statementis a trick to determine if we are in the global scope or inside a function. 
 					//When inside a function even if there are no args, an impossible variable "$" is passed through addScope
+					stringstream ss;
+					ss << "@";
 					if (addScope.size() < 1) { 
-						global[ps] = addScope.parseName(val);
+						global.initializeVar(ps, addScope.parseName(val));
 					}
 					else {
-						addScope[ps] = addScope.parseName(val);
+						addScope.initializeVar(ps, addScope.parseName(val));
 					}
+					//words[line_num].replace(0, ps.length(), ss.str());
 					//cout << "set " << ps << " to " << val << endl;
 				}
 				else if (foundAdd) {
@@ -323,14 +329,47 @@ bool compute(vector<string> &words, lwc_Scope &addScope) {
 	return false;
 }
 
+/*vector<char> SP_SYMBOLS = { '+', '-', '?', '>', '<', '~', '@' };
+bool isSP_SYM(const char &a) {
+	for (const char &b : SP_SYMBOLS) {
+		if (a == b)
+			return true;
+	}
+	return false;
+}
 
+void myReplace(string &s, const string &rep, int )
+
+vector<string> memProcess(vector<string> &words, string &key, string &addr) {
+	for (string &word : words) {
+		string ps;
+		string as;
+		char found_sym = 0;
+		for (const char &c : word) {
+			if (!isSP_SYM(c)) {
+				if (!found_sym) {
+					ps += c;
+				}
+				else if (found_sym) {
+					as += c;
+				}
+			}
+			else {
+				found_sym++;
+			}
+		}
+		if (ps == key) {
+			word.replace(0,ps.length(),)
+		}
+	}
+}*/
 
 int main()
 {
 	//Original file opening code from a sample provided to teach fstreams in an Advanced C++ class
 	//Thank you Professor Yates!
 	//I began working on this language as I played around with the fstream example
-	string fileName = "justfib.txt"; 
+	string fileName = "littlescript.txt"; 
 	fstream fs;  
 	string s; 
 	vector<string> words; 

@@ -7,7 +7,7 @@
 
 using namespace std;
 struct lwc_Scope;
-typedef unordered_map<string, int> dataset;
+typedef unordered_map<string, int*> dataset;
 
 typedef tuple<vector<string>, vector<string>> function_id;
 
@@ -27,17 +27,14 @@ public:
 	lwc_Scope() {
 	}
 	int& operator[](const string s) {
-		if (values.count(s) == 0) {
-			int &v = values[s] = 0;
-			ordered_values.push_back(s);
-			invrs_ord_val[s] = ordered_values.size() - 1;
-			return v;
+		if (values.count(s) < 1) {
+			values[s] = new int(0);
 		}
-		else {
-			return values[s];
-		}
+		return *values[s];
 	}
-	
+	int initializeVar(const string &s, int i) { //initializes variable then returns pointer
+		return (int)(values[s] = new int(i));
+	}
 	int count(const string s) {
 		return values.count(s);
 	}
@@ -57,7 +54,7 @@ public:
 
 	int get_address(string s)
 	{
-		return invrs_ord_val[s];
+		return (int)values[s];
 	}
 
 	int declare_function(string s, function_id &fid);

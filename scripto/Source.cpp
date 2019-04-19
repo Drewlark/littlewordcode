@@ -204,7 +204,7 @@ bool compute(vector<string> &words, lwc_Scope &addScope) {
 					else if (c == '+') {
 						foundAdd = true;
 					}
-					else if (c == '-') {
+					else if (c == '-' && foundAdd == false && foundSub==false) {
 						foundSub = true;
 					}
 					else if (c == '?') {
@@ -326,11 +326,11 @@ bool compute(vector<string> &words, lwc_Scope &addScope) {
 
 
 int main()
-{
+{ 
 	//Original file opening code from a sample provided to teach fstreams in an Advanced C++ class
 	//Thank you Professor Yates!
 	//I began working on this language as I played around with the fstream example
-	string fileName = "justfib.txt"; 
+	string fileName = "littlescript.txt"; 
 	fstream fs;  
 	string s; 
 	vector<string> words; 
@@ -351,5 +351,3 @@ int main()
 	//cin >> ends;
 	return 0;
 }
-
-

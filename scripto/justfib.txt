@@ -1,7 +1,7 @@
 k=0
 iter=0
-@iter<?10000000
-	k+1
+@iter<?1000
+	k--1
 	iter+1
 endc
 :k

@@ -23,6 +23,11 @@ int lwc_Scope::parseName(string &s) {
 	int val;
 	//s = scope+"."+ s;
 	//cout << s << endl;
+	if (s[0] == '-') {
+		val = atoi(s.substr(1).c_str());
+		val *= -1;
+		return val;
+	}
 	if (isNum(s)) {
 		val = atoi(s.c_str());
 	}
